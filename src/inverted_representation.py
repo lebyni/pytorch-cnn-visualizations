@@ -3,6 +3,7 @@ Created on Wed Jan 17 08:05:11 2018
 
 @author: Utku Ozbulak - github.com/utkuozbulak
 """
+import numpy as np
 import torch
 from torch.autograd import Variable
 from torch.optim import SGD
@@ -61,6 +62,22 @@ class InvertedRepresentation():
                 break
         return layer_output
 
+    def get_output_from_specific_layer_average(self, x, layer_id):
+        """
+            Saves the output after a forward pass until nth layer
+            This operation could be done with a forward hook too
+            but this one is simpler (I think)
+        """
+        layer_output = None
+        for index, layer in enumerate(self.model.features):
+            x = layer(x)
+            if str(index) == str(layer_id):
+                # layer_output = x[0]
+                layer_output = torch.mean(x, 0)
+                print(layer_output.shape)
+                break
+        return layer_output
+
     def generate_inverted_image_specific_layer(self, input_image, img_size, target_layer=3):
         # Generate a random image which we will optimize
         opt_img = Variable(1e-1 * torch.randn(1, 3, img_size, img_size), requires_grad=True)
@@ -69,7 +86,7 @@ class InvertedRepresentation():
         # Get the output from the model after a forward pass until target_layer
         # with the input image (real image, NOT the randomly generated one)
         input_image_layer_output = \
-            self.get_output_from_specific_layer(input_image, target_layer)
+            self.get_output_from_specific_layer_average(input_image, target_layer)
 
         # Alpha regularization parametrs
         # Parameter alpha, which is actually sixth norm
@@ -116,14 +133,14 @@ class InvertedRepresentation():
 
 if __name__ == '__main__':
     # Get params
-    target_example = 0  # Snake
+    target_example = [i for i in range(10)]  # Snake
+    # target_example = [3]
+    # print(target_example)
     (original_image, prep_img, target_class, file_name_to_export, pretrained_model) =\
         get_example_params(target_example)
 
     inverted_representation = InvertedRepresentation(pretrained_model)
     image_size = 224  # width & height
-    target_layer = 4
+    target_layer = 1
     print(prep_img.shape)
-    inverted_representation.generate_inverted_image_specific_layer(prep_img,
-                                                                   image_size,
-                                                                   target_layer)
+    inverted_representation.generate_inverted_image_specific_layer(prep_img  ,image_size,target_layer)

@@ -158,7 +158,7 @@ def preprocess_image(pil_im, resize_im=True):
     im_as_arr = np.float32(pil_im)
     im_as_arr = im_as_arr.transpose(2, 0, 1)  # Convert array to D,W,H
     # Normalize the channels
-    print(im_as_arr.shape)
+    # print(im_as_arr.shape)
     for channel, _ in enumerate(im_as_arr):
         im_as_arr[channel] /= 255
         im_as_arr[channel] -= mean[channel]
@@ -223,17 +223,32 @@ def get_example_params(example_index):
         pretrained_model(Pytorch model): Model to use for the operations
     """
     # Pick one of the examples
-    example_list = (('../input_images/Product_13.jpg', 56),
-                    ('../input_images/cat_dog.png', 243),
-                    ('../input_images/spider.png', 72))
-    img_path = example_list[example_index][0]
-    target_class = example_list[example_index][1]
-    file_name_to_export = img_path[img_path.rfind('/')+1:img_path.rfind('.')]
+
+    example_list = (('../input_images/test1.png', 56),
+                    ('../input_images/test2.jpg', 243),
+                    ('../input_images/test3.jpg', 72),
+                    ('../input_images/test4.jpg', 72),
+                    ('../input_images/test5.jpg', 72),
+                    ('../input_images/test6.jpg', 72),
+                    ('../input_images/test7.jpg', 72),
+                    ('../input_images/test8.jpg', 72),
+                    ('../input_images/test9.jpg', 72),
+                    ('../input_images/test10.png', 72))
+    prep_img=np.zeros((1,3,224,224))
+    for i in example_index:
+        img_path = example_list[i][0]
+        target_class = example_list[i][1]
+        file_name_to_export = img_path[img_path.rfind('/')+1:img_path.rfind('.')]
     # Read image
-    original_image = Image.open(img_path).convert('RGB')
+        original_image = Image.open(img_path).convert('RGB')
     # Process image
-    # print(original_image.shape)
-    prep_img = preprocess_image(original_image)
+        f=preprocess_image(original_image)
+        prep_img=np.concatenate((prep_img,f.detach().numpy()))
+
+    prep_img = np.delete(prep_img, 0, 0)
+    prep_img = torch.from_numpy(prep_img).float()
+
+    prep_img = Variable(prep_img, requires_grad=True)
     # Define model
     pretrained_model = models.alexnet(pretrained=True)
     return (original_image,
