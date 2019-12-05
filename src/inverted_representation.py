@@ -123,6 +123,7 @@ if __name__ == '__main__':
     inverted_representation = InvertedRepresentation(pretrained_model)
     image_size = 224  # width & height
     target_layer = 4
+    print(prep_img.shape)
     inverted_representation.generate_inverted_image_specific_layer(prep_img,
                                                                    image_size,
                                                                    target_layer)

@@ -153,10 +153,12 @@ def preprocess_image(pil_im, resize_im=True):
     std = [0.229, 0.224, 0.225]
     # Resize image
     if resize_im:
-        pil_im.thumbnail((224, 224))
+        pil_im=pil_im.resize((224,224))
+        # pil_im.thumbnail((224, 224))
     im_as_arr = np.float32(pil_im)
     im_as_arr = im_as_arr.transpose(2, 0, 1)  # Convert array to D,W,H
     # Normalize the channels
+    print(im_as_arr.shape)
     for channel, _ in enumerate(im_as_arr):
         im_as_arr[channel] /= 255
         im_as_arr[channel] -= mean[channel]
@@ -221,7 +223,7 @@ def get_example_params(example_index):
         pretrained_model(Pytorch model): Model to use for the operations
     """
     # Pick one of the examples
-    example_list = (('../input_images/snake.jpg', 56),
+    example_list = (('../input_images/Product_13.jpg', 56),
                     ('../input_images/cat_dog.png', 243),
                     ('../input_images/spider.png', 72))
     img_path = example_list[example_index][0]
@@ -230,6 +232,7 @@ def get_example_params(example_index):
     # Read image
     original_image = Image.open(img_path).convert('RGB')
     # Process image
+    # print(original_image.shape)
     prep_img = preprocess_image(original_image)
     # Define model
     pretrained_model = models.alexnet(pretrained=True)
